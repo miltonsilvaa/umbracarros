@@ -47,7 +47,7 @@ export function App() {
           }
         />
         <Route
-          path="/dashboard/favorites"
+          path="/dashboard/favoritos"
           element={
             <Private>
               <Favorites />

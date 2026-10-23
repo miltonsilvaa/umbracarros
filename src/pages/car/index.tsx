@@ -12,7 +12,7 @@ import type { CarProps } from '../../types/car'
 export function CarDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { signed } = useAuth()
+  const { signed, user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites()
   const [car, setCar] = useState<CarProps | null>(null)
   const [loading, setLoading] = useState(true)
@@ -59,6 +59,7 @@ export function CarDetail() {
   if (!car) return null
 
   const favorited = isFavorite(car.id)
+  const isOwnCar = !!user && user.uid === car.ownerId
 
   const whatsappMessage = encodeURIComponent(
     `Olá, vi o anúncio do ${car.name} no WebCarros e fiquei interessado!`,
@@ -67,6 +68,8 @@ export function CarDetail() {
   const carId = car.id
 
   function handleToggleFavorite() {
+    if (isOwnCar) return
+
     if (!signed) {
       navigate('/login')
       return
@@ -121,8 +124,15 @@ export function CarDetail() {
             </p>
             <button
               onClick={handleToggleFavorite}
-              aria-label={favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              className="rounded-full border border-gray-200 p-2 shadow-sm hover:bg-gray-50"
+              disabled={isOwnCar}
+              aria-label={
+                isOwnCar
+                  ? 'Você não pode favoritar seu próprio anúncio'
+                  : favorited
+                    ? 'Remover dos favoritos'
+                    : 'Adicionar aos favoritos'
+              }
+              className="rounded-full border border-gray-200 p-2 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
             >
               <FiHeart size={22} className={favorited ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
             </button>

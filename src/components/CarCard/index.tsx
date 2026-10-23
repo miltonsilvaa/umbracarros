@@ -7,14 +7,17 @@ import type { CarProps } from '../../types/car'
 
 export function CarCard({ car }: { car: CarProps }) {
   const navigate = useNavigate()
-  const { signed } = useAuth()
+  const { signed, user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites()
   const favorited = isFavorite(car.id)
+  const isOwnCar = !!user && user.uid === car.ownerId
 
   function handleToggleFavorite(event: MouseEvent) {
     // O card todo é um <Link>: sem isso, o clique no coração também navegaria pro detalhe.
     event.preventDefault()
     event.stopPropagation()
+
+    if (isOwnCar) return
 
     if (!signed) {
       navigate('/login')
@@ -28,8 +31,15 @@ export function CarCard({ car }: { car: CarProps }) {
     <Link to={`/car/${car.id}`} className="group relative block">
       <button
         onClick={handleToggleFavorite}
-        aria-label={favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-        className="absolute right-2 top-2 z-10 rounded-full bg-white/90 p-2 shadow hover:bg-white"
+        disabled={isOwnCar}
+        aria-label={
+          isOwnCar
+            ? 'Você não pode favoritar seu próprio anúncio'
+            : favorited
+              ? 'Remover dos favoritos'
+              : 'Adicionar aos favoritos'
+        }
+        className="absolute right-2 top-2 z-10 rounded-full bg-white/90 p-2 shadow hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/90"
       >
         <FiHeart size={18} className={favorited ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
       </button>

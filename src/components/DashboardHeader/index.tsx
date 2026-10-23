@@ -6,7 +6,7 @@ export function DashboardHeader() {
       <span className="text-sm font-medium text-white">Painel do usuário</span>
       <div className="flex items-center gap-4">
         <Link
-          to="/dashboard/favorites"
+          to="/dashboard/favoritos"
           className="text-sm font-medium text-orange-400 hover:text-orange-300"
         >
           Favoritos
