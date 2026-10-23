@@ -86,6 +86,22 @@ Firebase JS SDK.
   that creates the exact index needed; click it (or add the index manually: collection `cars`,
   fields `ownerId` Ascending + `created` Descending). This is expected on first run, not a bug.
 - `src/components/CarCard/index.tsx` is the shared car-grid card (image, name, year/km, price,
-  city, links to `/car/:id`) — used by both `Home` and `Vendor`. `Dashboard`'s card is *not*
-  this component: it needs the edit/delete buttons instead of a `Link` wrapper, so it stays
-  separate rather than forcing an action-slot prop onto `CarCard` for one caller.
+  city, links to `/car/:id`) — used by `Home`, `Vendor`, and `Favorites`. `Dashboard`'s card is
+  *not* this component: it needs the edit/delete buttons instead of a `Link` wrapper, so it
+  stays separate rather than forcing an action-slot prop onto `CarCard` for one caller.
+- Favorites: `favorites` is a flat top-level collection, not a `users/{uid}/favorites`
+  subcollection (there's no `users` doc to nest under). Each doc's ID is the deterministic
+  `{uid}_{carId}` (not auto-generated) — see `src/contexts/FavoritesContext.tsx` — so
+  favoriting/unfavoriting is a `setDoc`/`deleteDoc` by known ID, never a query, and the same
+  car can't be double-favorited by the same user. `FavoritesProvider` wraps `<App />` inside
+  `AuthProvider` in `main.tsx` and loads the *entire* set of the signed-in user's favorite
+  `carId`s once (one query) into a `Set<string>` kept in context — `CarCard` and `CarDetail`
+  call `isFavorite(carId)` against that in-memory set rather than each doing their own
+  Firestore read, which matters once a grid has more than a couple of cards. `firestore.rules`
+  mirrors this: `create` requires both `uid == auth.uid` *and* the doc ID to actually equal
+  `{auth.uid}_{carId}`, so a client can't write a `favorites` doc under a mismatched ID.
+  `src/pages/dashboard/favorites/index.tsx` resolves each favorited `carId` with an individual
+  `getDoc` (not denormalized car data in the favorite doc — the car's current price/image stays
+  authoritative instead of drifting). If a favorited car was deleted, that `getDoc` comes back
+  non-existent; the page opportunistically calls `toggleFavorite` on it to delete the now-orphaned
+  `favorites` doc instead of leaving it to accumulate.

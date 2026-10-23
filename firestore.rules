@@ -35,10 +35,30 @@ service cloud.firestore {
         && request.auth.uid == resource.data.ownerId;
     }
 
-    // Não existe collection "users" neste projeto: auditei src/ e a única leitura/escrita do
-    // app é em "cars" (grep por `collection(db` não retorna nada além disso). Perfil do usuário
-    // vem inteiramente do Firebase Auth (displayName/email via AuthContext), não há documento
-    // de usuário no Firestore. Se essa collection vier a existir, a regra correspondente seria:
+    // Coleção "favorites": um doc por par (usuário, carro) favoritado — ver
+    // src/contexts/FavoritesContext.tsx. ID do doc é sempre "{uid}_{carId}", nunca autogerado.
+    match /favorites/{favoriteId} {
+
+      // Só o próprio usuário lê/apaga os favoritos dele — não é informação pública como "cars".
+      allow read, delete: if request.auth != null && request.auth.uid == resource.data.uid;
+
+      // Criação exige que o "uid" do payload seja o do usuário autenticado (ninguém favorita
+      // em nome de outro) E que o ID do documento realmente corresponda a "{uid}_{carId}" —
+      // sem essa segunda checagem, alguém poderia gravar um "favorites/qualquer-coisa" com uid
+      // próprio mas carId arbitrário, fugindo da convenção que o app e as outras regras
+      // assumem (um favorito determinístico por usuário+carro, sem duplicatas).
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid
+        && favoriteId == request.auth.uid + '_' + request.resource.data.carId;
+
+      // Sem "allow update": o app só cria ou apaga favoritos, nunca edita um já existente —
+      // a ausência de regra já bloqueia update por padrão.
+    }
+
+    // Não existe collection "users" neste projeto: as únicas collections gravadas pelo app são
+    // "cars" e "favorites" (grep por `collection(db` não retorna nada além disso). Perfil do
+    // usuário vem inteiramente do Firebase Auth (displayName/email via AuthContext), não há
+    // documento de usuário no Firestore. Se essa collection vier a existir, a regra seria:
     //   match /users/{userId} {
     //     allow read, write: if request.auth != null && request.auth.uid == userId;
     //   }

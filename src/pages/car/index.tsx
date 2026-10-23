@@ -1,15 +1,19 @@
 import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiHeart } from 'react-icons/fi'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
+import { useAuth } from '../../hooks/useAuth'
+import { useFavorites } from '../../hooks/useFavorites'
 import { db } from '../../services/firebaseConnection'
 import type { CarProps } from '../../types/car'
 
 export function CarDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { signed } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const [car, setCar] = useState<CarProps | null>(null)
   const [loading, setLoading] = useState(true)
   const [slide, setSlide] = useState(0)
@@ -54,9 +58,21 @@ export function CarDetail() {
 
   if (!car) return null
 
+  const favorited = isFavorite(car.id)
+
   const whatsappMessage = encodeURIComponent(
     `Olá, vi o anúncio do ${car.name} no WebCarros e fiquei interessado!`,
   )
+
+  const carId = car.id
+
+  function handleToggleFavorite() {
+    if (!signed) {
+      navigate('/login')
+      return
+    }
+    toggleFavorite(carId)
+  }
 
   return (
     <Container>
@@ -99,9 +115,18 @@ export function CarDetail() {
             <h1 className="text-2xl font-bold text-gray-800">{car.name}</h1>
             <p className="text-gray-500">{car.model}</p>
           </div>
-          <p className="text-3xl font-bold text-orange-500">
-            {car.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-3xl font-bold text-orange-500">
+              {car.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </p>
+            <button
+              onClick={handleToggleFavorite}
+              aria-label={favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              className="rounded-full border border-gray-200 p-2 shadow-sm hover:bg-gray-50"
+            >
+              <FiHeart size={22} className={favorited ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
+            </button>
+          </div>
         </div>
 
         <div className="my-4 h-px bg-gray-200" />

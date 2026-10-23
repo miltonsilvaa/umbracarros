@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { CarDetail } from './pages/car'
 import { Dashboard } from './pages/dashboard'
 import { Edit } from './pages/dashboard/edit'
+import { Favorites } from './pages/dashboard/favorites'
 import { New } from './pages/dashboard/new'
 import { Home } from './pages/home'
 import { Login } from './pages/login'
@@ -42,6 +43,14 @@ export function App() {
           element={
             <Private>
               <Edit />
+            </Private>
+          }
+        />
+        <Route
+          path="/dashboard/favorites"
+          element={
+            <Private>
+              <Favorites />
             </Private>
           }
         />
