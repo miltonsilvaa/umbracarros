@@ -2,7 +2,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { db } from '../../services/firebaseConnection'
 import type { CarProps } from '../../types/car'
@@ -121,7 +121,12 @@ export function CarDetail() {
           </div>
           <div>
             <p className="text-gray-400">Anunciante</p>
-            <p className="font-medium text-gray-800">{car.ownerName}</p>
+            <Link
+              to={`/vendedor/${car.ownerId}`}
+              className="font-medium text-gray-800 underline-offset-2 hover:text-orange-500 hover:underline"
+            >
+              {car.ownerName}
+            </Link>
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import { Home } from './pages/home'
 import { Login } from './pages/login'
 import { NotFound } from './pages/notfound'
 import { Register } from './pages/register'
+import { Vendor } from './pages/vendor'
 import { Private } from './routes/Private'
 
 export function App() {
@@ -17,6 +18,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/car/:id" element={<CarDetail />} />
+        <Route path="/vendedor/:id" element={<Vendor />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route

@@ -74,3 +74,18 @@ Firebase JS SDK.
   same `ownerId` field `CarProps` uses, and on the real Storage path
   `images/{uid}/{fileName}` (no `carId` segment — one flat folder per user, matching
   `New`/`Dashboard`, not a `cars/{uid}/{carId}/...` nesting).
+- There is still no `users` collection. `src/pages/vendor/index.tsx` (public route
+  `/vendedor/:id`) shows a seller's profile by querying `cars` for `ownerId == id` and reading
+  `ownerName`/`ownerEmail` off whichever car comes back first — it does not read a user profile
+  doc, because there isn't one. A seller with zero active ads has no data source for their own
+  name, so the page falls back to a "no active listings" state instead of a profile.
+- `Vendor`'s query (`where('ownerId', '==', id)` + `orderBy('created', 'desc')`) is an
+  equality-filter-plus-orderBy-on-a-different-field query, which Firestore does **not** cover
+  with its automatic single-field indexes — it needs a composite index. The first time this
+  query runs against a real project, Firestore throws `failed-precondition` with a console link
+  that creates the exact index needed; click it (or add the index manually: collection `cars`,
+  fields `ownerId` Ascending + `created` Descending). This is expected on first run, not a bug.
+- `src/components/CarCard/index.tsx` is the shared car-grid card (image, name, year/km, price,
+  city, links to `/car/:id`) — used by both `Home` and `Vendor`. `Dashboard`'s card is *not*
+  this component: it needs the edit/delete buttons instead of a `Link` wrapper, so it stays
+  separate rather than forcing an action-slot prop onto `CarCard` for one caller.
