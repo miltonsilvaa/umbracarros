@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Coleção "cars": anúncios de veículos (único documento gravado pelo app — ver
+    // src/pages/dashboard/new/index.tsx e src/pages/dashboard/index.tsx).
+    match /cars/{carId} {
+
+      // Leitura pública: visitante não logado precisa navegar no catálogo (Home) e abrir o
+      // detalhe do carro (/car/:id) sem autenticação.
+      allow read: if true;
+
+      // Criação exige estar logado, e o "ownerId" do documento criado tem que ser o próprio
+      // uid autenticado — sem isso, um usuário logado poderia forjar um anúncio em nome de
+      // outra pessoa só sabendo o uid dela.
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
+
+      // Atualização só pelo dono original (ver src/pages/dashboard/edit/index.tsx) — e, além
+      // de só o dono poder editar, o payload enviado não pode mudar "ownerId"/"ownerName"/
+      // "ownerEmail"/"created". Sem essa segunda checagem, o próprio dono (autorizado a dar
+      // update) poderia incluir um "ownerId" diferente no payload e transferir/vazar o anúncio
+      // pra dentro do dashboard de outra pessoa.
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.ownerName == resource.data.ownerName
+        && request.resource.data.ownerEmail == resource.data.ownerEmail
+        && request.resource.data.created == resource.data.created;
+
+      // Exclusão só pelo dono original. Não existe "request.resource" numa exclusão (não há
+      // payload novo sendo enviado), por isso fica numa regra separada da de update.
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.ownerId;
+    }
+
+    // Não existe collection "users" neste projeto: auditei src/ e a única leitura/escrita do
+    // app é em "cars" (grep por `collection(db` não retorna nada além disso). Perfil do usuário
+    // vem inteiramente do Firebase Auth (displayName/email via AuthContext), não há documento
+    // de usuário no Firestore. Se essa collection vier a existir, a regra correspondente seria:
+    //   match /users/{userId} {
+    //     allow read, write: if request.auth != null && request.auth.uid == userId;
+    //   }
+
+    // Qualquer outra collection/documento não listado acima fica bloqueado (ausência de regra
+    // equivale a "deny" no Firestore).
+  }
+}

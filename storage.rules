@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Imagens dos anúncios: images/{uid}/{fileName}
+    // "uid" aqui é o Firebase Auth uid do dono do anúncio — o mesmo valor gravado como
+    // "ownerId" no Firestore. O path é montado em
+    // src/pages/dashboard/new/index.tsx (`images/${user.uid}/${uid}`) e lido de volta em
+    // src/pages/dashboard/index.tsx (`images/${car.ownerId}/${image.name}`) para apagar os
+    // arquivos quando o anúncio é excluído.
+    match /images/{uid}/{fileName} {
+
+      // Leitura pública: as imagens aparecem no grid da Home e no detalhe do carro sem login.
+      allow read: if true;
+
+      // Criação/sobrescrita só por quem está logado E é o dono da própria pasta (uid do path
+      // precisa ser igual ao uid autenticado) — impede escrever na pasta de outro usuário.
+      // Também valida que o arquivo é realmente uma imagem e não passa de 5MB, pra não deixar
+      // um autenticado subir arquivo arbitrário (ex.: executável) ou abusar do armazenamento.
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.contentType.matches('image/.*')
+        && request.resource.size < 5 * 1024 * 1024;
+
+      // Exclusão só pelo dono da pasta. Não há "request.resource" numa exclusão (não existe
+      // arquivo novo sendo enviado), por isso essa regra fica separada da de create/update, sem
+      // repetir as validações de content-type/tamanho que não se aplicam aqui.
+      allow delete: if request.auth != null
+        && request.auth.uid == uid;
+    }
+
+    // Qualquer outro path não listado acima fica bloqueado (ausência de regra equivale a
+    // "deny" no Storage).
+  }
+}
