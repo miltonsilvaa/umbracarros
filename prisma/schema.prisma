@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+  COMPLETED
+}
+
+model Car {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  brand       String
+  model       String
+  year        Int
+  km          Int
+  price       Decimal  @db.Decimal(10, 2)
+  description String?  @db.Text
+  fuel        String?
+  color       String?
+  city        String?
+  whatsapp    String?
+  sold        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images    CarImage[]
+  favorites Favorite[]
+  orders    Order[]
+
+  @@index([userId])
+}
+
+model CarImage {
+  id        String   @id @default(cuid())
+  url       String
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([carId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, carId])
+  @@index([carId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  carId     String
+  car       Car         @relation(fields: [carId], references: [id])
+  status    OrderStatus @default(PENDING)
+  total     Decimal     @db.Decimal(10, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([carId])
+}
