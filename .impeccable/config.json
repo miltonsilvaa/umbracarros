@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "createdAt": "2026-10-28T03:24:30.488Z",
+        "reason": "user confirmed 2026-10-28: keep Arial/Helvetica until the dedicated visual-polish phase"
+      }
+    ]
+  }
+}
