@@ -71,6 +71,8 @@ const cars = [
 ];
 
 async function main() {
+  await prisma.car.deleteMany({ where: { userId: SEED_USER_ID } });
+
   for (const car of cars) {
     const { images, ...data } = car;
 
