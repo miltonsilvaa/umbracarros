@@ -3,15 +3,19 @@
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { carSchema, DEFAULT_CAR_IMAGE_URL, type CarFormInput, type CarFormValues } from "@/lib/validations/car";
+import { carSchema, type CarFormInput, type CarFormValues } from "@/lib/validations/car";
 import { createCar } from "@/app/dashboard/new/actions";
+import { UploadButton } from "@/lib/uploadthing";
 
 export function CarForm() {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CarFormInput, unknown, CarFormValues>({
     resolver: zodResolver(carSchema),
@@ -27,9 +31,11 @@ export function CarForm() {
       color: "",
       city: "",
       whatsapp: "",
-      imageUrl: DEFAULT_CAR_IMAGE_URL,
+      imageUrl: "",
     },
   });
+
+  const imageUrl = watch("imageUrl");
 
   const onSubmit: SubmitHandler<CarFormValues> = async (values) => {
     setServerError(null);
@@ -83,12 +89,34 @@ export function CarForm() {
         </Field>
       </div>
 
-      <Field
-        label="URL da imagem"
-        error={errors.imageUrl?.message}
-        hint="Upload de imagem real vem em uma próxima fase — por enquanto, cole um link. Deixamos um placeholder preenchido."
-      >
-        <input {...register("imageUrl")} className={inputClass} placeholder={DEFAULT_CAR_IMAGE_URL} />
+      <Field label="Foto do carro" error={errors.imageUrl?.message ?? uploadError ?? undefined}>
+        <input type="hidden" {...register("imageUrl")} />
+        <div className="flex items-center gap-4">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt="Pré-visualização do carro"
+              className="h-20 w-28 rounded-lg border-2 border-gray-200 object-cover"
+            />
+          ) : null}
+          <UploadButton
+            endpoint="carImage"
+            onBeforeUploadBegin={(files) => {
+              setUploadError(null);
+              return files;
+            }}
+            onClientUploadComplete={(res) => {
+              const url = res[0]?.url;
+              if (url) {
+                setValue("imageUrl", url, { shouldValidate: true });
+              }
+            }}
+            onUploadError={(error) => {
+              setUploadError(`Falha no upload: ${error.message}`);
+            }}
+          />
+        </div>
       </Field>
 
       <Field label="Descrição" error={errors.description?.message}>

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-export const DEFAULT_CAR_IMAGE_URL = "https://picsum.photos/800/600";
-
 export const carSchema = z.object({
   title: z.string().min(3, "Informe um título com pelo menos 3 caracteres"),
   brand: z.string().min(2, "Informe a marca"),
@@ -21,8 +19,8 @@ export const carSchema = z.object({
   imageUrl: z
     .string()
     .trim()
-    .transform((value) => (value === "" ? DEFAULT_CAR_IMAGE_URL : value))
-    .pipe(z.string().url("Informe uma URL de imagem válida")),
+    .min(1, "Envie uma imagem do carro")
+    .pipe(z.string().url("URL de imagem inválida")),
 });
 
 export type CarFormInput = z.input<typeof carSchema>;
