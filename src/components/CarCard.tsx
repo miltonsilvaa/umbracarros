@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { CarListItem } from "@/lib/cars";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 export function CarCard({ car }: { car: CarListItem }) {
   return (
@@ -18,6 +19,11 @@ export function CarCard({ car }: { car: CarListItem }) {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         )}
+        <FavoriteButton
+          carId={car.id}
+          initialFavorited={car.isFavorited}
+          className="absolute right-2 top-2"
+        />
       </div>
       <div className="p-4">
         <h2 className="truncate text-lg font-semibold text-gray-800">{car.title}</h2>
