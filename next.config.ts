@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    remotePatterns: [new URL("https://picsum.photos/**")],
+    remotePatterns: [
+      new URL("https://picsum.photos/**"),
+      new URL("https://utfs.io/**"),
+      new URL("https://*.ufs.sh/**"),
+    ],
   },
   turbopack: {
     rules: {
