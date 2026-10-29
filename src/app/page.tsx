@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { Container } from "@/components/Container";
 import { CarCard } from "@/components/CarCard";
 import { getCars } from "@/lib/cars";
@@ -20,7 +21,8 @@ export default function Home() {
 
 async function CarList() {
   await connection();
-  const cars = await getCars();
+  const { userId } = await auth();
+  const cars = await getCars(userId);
 
   if (cars.length === 0) {
     return <p className="text-center text-gray-500">Nenhum veículo encontrado.</p>;
