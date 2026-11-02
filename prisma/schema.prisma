@@ -60,14 +60,16 @@ model Favorite {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  carId     String
-  car       Car         @relation(fields: [carId], references: [id])
-  status    OrderStatus @default(PENDING)
-  total     Decimal     @db.Decimal(10, 2)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id                      String      @id @default(cuid())
+  userId                  String
+  carId                   String
+  car                     Car         @relation(fields: [carId], references: [id])
+  status                  OrderStatus @default(PENDING)
+  total                   Decimal     @db.Decimal(10, 2)
+  stripeCheckoutSessionId String?     @unique
+  stripePaymentIntentId   String?     @unique
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
 
   @@index([userId])
   @@index([carId])

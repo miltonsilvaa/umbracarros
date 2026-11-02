@@ -5,6 +5,7 @@ import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 import { Container } from "@/components/Container";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { ReserveButton } from "@/components/ReserveButton";
 import { getCarById } from "@/lib/cars";
 
 export default function CarPage({ params }: { params: Promise<{ id: string }> }) {
@@ -83,15 +84,24 @@ async function CarDetail({ params }: { params: Promise<{ id: string }> }) {
           <p className="mt-6 whitespace-pre-line text-gray-700">{car.description}</p>
         )}
 
-        {car.whatsapp && (
-          <a
-            href={`https://wa.me/${car.whatsapp.replace(/\D/g, "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-block rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-600"
-          >
-            Conversar no WhatsApp
-          </a>
+        {car.sold ? (
+          <p className="mt-6 inline-block rounded-lg bg-gray-100 px-6 py-3 text-sm font-medium text-gray-500">
+            Este carro já foi reservado
+          </p>
+        ) : (
+          <div className="mt-6 flex flex-wrap items-start gap-3">
+            <ReserveButton carId={car.id} />
+            {car.whatsapp && (
+              <a
+                href={`https://wa.me/${car.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-600"
+              >
+                Conversar no WhatsApp
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

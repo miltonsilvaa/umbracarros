@@ -19,6 +19,7 @@ export type CarDetail = CarListItem & {
   color: string | null;
   whatsapp: string | null;
   images: string[];
+  sold: boolean;
 };
 
 export async function getCars(userId?: string | null): Promise<CarListItem[]> {
@@ -86,5 +87,6 @@ export async function getCarById(
     whatsapp: car.whatsapp,
     images: car.images.map((image) => image.url),
     isFavorited: userId ? car.favorites.length > 0 : false,
+    sold: car.sold,
   };
 }
